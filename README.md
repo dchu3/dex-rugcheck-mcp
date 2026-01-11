@@ -1,2 +1,2 @@
 # dex-rugcheck-mcp
-Typescript RugCheck mcp server
+TypeScript RugCheck mcp server
