@@ -5,6 +5,7 @@ import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 import { z } from "zod";
 
 const RUGCHECK_API_BASE = "https://api.rugcheck.xyz/v1";
+const FETCH_TIMEOUT_MS = 15000; // 15 second timeout for API requests
 
 const server = new McpServer({
   name: "rugcheck",
@@ -25,6 +26,7 @@ server.tool(
           headers: {
             accept: "application/json",
           },
+          signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
         }
       );
 
@@ -50,6 +52,16 @@ server.tool(
         ],
       };
     } catch (error) {
+      if (error instanceof Error && error.name === "TimeoutError") {
+        return {
+          content: [
+            {
+              type: "text" as const,
+              text: `Error: Request timed out after ${FETCH_TIMEOUT_MS / 1000} seconds`,
+            },
+          ],
+        };
+      }
       const errorMessage =
         error instanceof Error ? error.message : "Unknown error";
       return {
